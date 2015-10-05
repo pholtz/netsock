@@ -34,8 +34,8 @@ from PIL import Image, ImageTk
 def main():
 
 	print "Starting chat client."
-	ip = "127.0.0.1"#str(raw_input("Enter an ip address to connect to: "))
-	port = 9999#int(raw_input("Enter a port to connect to: "))
+	ip = str(raw_input("Enter an ip address to connect to: "))
+	port = int(raw_input("Enter a port to connect to: "))
 
 	# Create a socket (SOCK_STREAM means a TCP socket)
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
