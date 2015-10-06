@@ -82,7 +82,7 @@ class MyTCPHandler(StreamRequestHandler):
         self.username = self.check_username()
 
         #Broadcast this clients entry to all other clients
-        self.broadcast("Client connected.")
+        self.broadcast("{0}@{1}:{2} connected.".format(self.username, self.client_address[0], self.client_address[1]), flag="connected")
 
         #Put the user in the user queue
         #This is very important! Do not modify this without good reason.
@@ -95,6 +95,9 @@ class MyTCPHandler(StreamRequestHandler):
         #Turn off blocking mode
         self.request.setblocking(0)
         self.received_data = False
+
+        #Send the user some basic info before starting the message loop
+        self.wfile.write("Hello! Any text you enter will be echoed to all clients.\nEnter \"!LIST\" to see a list of client commands.")
 
         #------------------------------------------#
         #       M E S S E N G E R    L O O P       #
@@ -135,7 +138,7 @@ class MyTCPHandler(StreamRequestHandler):
         #Remove the client from the queue -- Finish Him!
         self.remove_client()
         #Broadcast the disconnect message
-        self.broadcast("Client disconnected.")
+        self.broadcast("{0}@{1}:{2} disconnected.".format(self.username, self.client_address[0], self.client_address[1]), flag="disconnected")
         #Write disconnect to log file
         with open("chat.log", "a+") as log_file:
             log_file.write("{0}@{1}:{2} >> Client disconnected.\n".format(self.username, self.client_address[0], self.client_address[1]))
@@ -144,14 +147,17 @@ class MyTCPHandler(StreamRequestHandler):
 
 
 
-    def broadcast(self, message):
+    def broadcast(self, message, flag=""):
         handler_list = self.get_client_list()
 
         #Send the message to each client using the client's handler object
         for handler in handler_list:
 
             try:
-                handler.wfile.write("{0}@{1}:{2} >> {3}".format(self.username, handler.client_address[0], handler.client_address[1], message))
+                if flag == "connected" or flag == "disconnected":
+                    handler.wfile.write(message)
+                else:
+                    handler.wfile.write("{0}@{1}:{2} >> {3}".format(self.username, handler.client_address[0], handler.client_address[1], message))
                 self.received_data = False
             except IOError as err:
                 handler.request.close()
